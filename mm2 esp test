@@ -1,0 +1,106 @@
+-- Basic ESP script for "Murder Mystery 2" on Roblox
+-- Run this in a LocalScript within the game
+
+-- Function to create the ESP effect for a player
+local function createESP(player, roleColor)
+    if not player.Character then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.Parent = player.Character
+    highlight.Adornee = player.Character
+    highlight.FillColor = roleColor
+    highlight.OutlineColor = Color3.new(1, 1, 1) -- White outline
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+end
+
+-- Function to remove the ESP effect from a player
+local function removeESP(player)
+    if player.Character and player.Character:FindFirstChild("ESPHighlight") then
+        player.Character.ESPHighlight:Destroy()
+    end
+end
+
+-- Function to determine the player's role and apply the appropriate ESP
+local function applyESP(player)
+    local role = getPlayerRole(player)
+    if role == "Murderer" then
+        createESP(player, Color3.new(1, 0, 0)) -- Red for Murderer
+    elseif role == "Sheriff" then
+        createESP(player, Color3.new(0, 0, 1)) -- Blue for Sheriff
+    else
+        createESP(player, Color3.new(0, 1, 0)) -- Green for Innocent
+    end
+end
+
+-- Function to apply green ESP to all players (Lobby)
+local function applyLobbyESP(player)
+    createESP(player, Color3.new(0, 1, 0)) -- Green for all players in the lobby
+end
+
+-- Function to handle new players joining the game
+local function onPlayerAdded(player)
+    if player.Character then
+        applyLobbyESP(player)
+    end
+
+    player.CharacterAdded:Connect(function()
+        applyLobbyESP(player)
+    end)
+
+    player.CharacterRemoving:Connect(function()
+        removeESP(player)
+    end)
+end
+
+-- Function to handle players leaving the game
+local function onPlayerRemoving(player)
+    removeESP(player)
+end
+
+-- Function that determines a player's role
+function getPlayerRole(player)
+    if player:FindFirstChild("Role") then
+        return player.Role.Value
+    end
+    return "Innocent" -- Default to Innocent if no role is found
+end
+
+-- Add ESP to existing players
+for _, player in pairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        onPlayerAdded(player)
+    end
+end
+
+-- Connect the PlayerAdded and PlayerRemoving events
+game.Players.PlayerAdded:Connect(function(player)
+    if player ~= game.Players.LocalPlayer then
+        onPlayerAdded(player)
+    end
+end)
+
+game.Players.PlayerRemoving:Connect(onPlayerRemoving)
+
+-- Listen for game state changes to update ESP based on roles
+game:GetService("RunService").Stepped:Connect(function()
+    if game:GetService("Workspace"):FindFirstChild("GameState") then
+        local gameState = game:GetService("Workspace").GameState.Value
+        if gameState == "Playing" then
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    removeESP(player)
+                    applyESP(player)
+                end
+            end
+        else
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    removeESP(player)
+                    applyLobbyESP(player)
+                end
+            end
+        end
+    end
+end)
