@@ -26,10 +26,13 @@ end
 local function applyESP(player)
     local role = getPlayerRole(player)
     if role == "Murderer" then
+        print(player.Name .. " is the Murderer")
         createESP(player, Color3.new(1, 0, 0)) -- Red for Murderer
     elseif role == "Sheriff" then
+        print(player.Name .. " is the Sheriff")
         createESP(player, Color3.new(0, 0, 1)) -- Blue for Sheriff
     else
+        print(player.Name .. " is Innocent")
         createESP(player, Color3.new(0, 1, 0)) -- Green for Innocent
     end
 end
@@ -65,8 +68,13 @@ function getPlayerRole(player)
     if leaderstats then
         local role = leaderstats:FindFirstChild("Role")
         if role then
+            print(player.Name .. " has role: " .. role.Value) -- Debug print
             return role.Value
+        else
+            print(player.Name .. " has no Role value found") -- Debug print
         end
+    else
+        print(player.Name .. " has no leaderstats found") -- Debug print
     end
     return "Innocent" -- Default to Innocent if no role is found
 end
@@ -92,6 +100,7 @@ game:GetService("RunService").Stepped:Connect(function()
     if game:GetService("Workspace"):FindFirstChild("GameState") then
         local gameState = game:GetService("Workspace").GameState.Value
         if gameState == "Playing" then
+            print("Game State: Playing") -- Debug print
             for _, player in pairs(game.Players:GetPlayers()) do
                 if player ~= game.Players.LocalPlayer then
                     removeESP(player)
@@ -99,6 +108,7 @@ game:GetService("RunService").Stepped:Connect(function()
                 end
             end
         else
+            print("Game State: Lobby") -- Debug print
             for _, player in pairs(game.Players:GetPlayers()) do
                 if player ~= game.Players.LocalPlayer then
                     removeESP(player)
