@@ -1,0 +1,81 @@
+-- Basic ESP script for "Murder Mystery 2" on Roblox
+-- Make sure to run this in a local script within the game
+
+-- Function to create the ESP effect for a player
+local function createESP(player, roleColor)
+    if not player.Character then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Parent = player.Character
+    highlight.Adornee = player.Character
+    highlight.FillColor = roleColor
+    highlight.OutlineColor = Color3.new(1, 1, 1) -- White outline
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+end
+
+-- Function to remove the ESP effect from a player
+local function removeESP(player)
+    if player.Character and player.Character:FindFirstChild("Highlight") then
+        player.Character.Highlight:Destroy()
+    end
+end
+
+-- Function to determine the player's role and apply the appropriate ESP
+local function applyESP(player)
+    local role = getPlayerRole(player) -- Implement this function based on how you get the role
+    if role == "Murderer" then
+        createESP(player, Color3.new(1, 0, 0)) -- Red for Murderer
+    elseif role == "Sheriff" then
+        createESP(player, Color3.new(0, 0, 1)) -- Blue for Sheriff
+    else
+        createESP(player, Color3.new(0, 1, 0)) -- Green for Innocent
+    end
+end
+
+-- Function to handle new players joining the game
+local function onPlayerAdded(player)
+    if player.Character then
+        applyESP(player)
+    end
+
+    player.CharacterAdded:Connect(function()
+        applyESP(player)
+    end)
+
+    player.CharacterRemoving:Connect(function()
+        removeESP(player)
+    end)
+end
+
+-- Function to handle players leaving the game
+local function onPlayerRemoving(player)
+    removeESP(player)
+end
+
+-- Add ESP to existing players
+for _, player in pairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        onPlayerAdded(player)
+    end
+end
+
+-- Connect the PlayerAdded and PlayerRemoving events
+game.Players.PlayerAdded:Connect(function(player)
+    if player ~= game.Players.LocalPlayer then
+        onPlayerAdded(player)
+    end
+end)
+
+game.Players.PlayerRemoving:Connect(onPlayerRemoving)
+
+-- Placeholder for the function that determines a player's role
+function getPlayerRole(player)
+    -- This function should return the role of the player: "Murderer", "Sheriff", or "Innocent"
+    -- You need to implement this based on the game's specific role assignment logic
+    -- For example, it might look like this:
+    -- if player:FindFirstChild("Role") then
+    --     return player.Role.Value
+    -- end
+    return "Innocent" -- Default to Innocent for this example
+end
